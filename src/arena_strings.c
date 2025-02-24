@@ -26,7 +26,6 @@ static size_t string_length64(const uint64_t* str) {
     return len;
 }
 
-// Funções para criar strings
 ArenaString8* arena_string8_create(Arena* arena, const char* input) {
     size_t len = string_length8(input);
     ArenaString8* str = (ArenaString8*) arena_alloc(arena, sizeof(ArenaString8), alignof(ArenaString8));
@@ -147,7 +146,6 @@ type* convert_to_uint##suffix(Arena* arena, const char* str) {      \
         result[i+2] = (type) str[i+2];                                         \
         result[i+3] = (type) str[i+3];                                         \
     }                                                                        \
-    /* Processa o restante */                                                  \
     for (; i < n; i++) {                                                     \
         result[i] = (type) str[i];                                             \
     }                                                                        \
