@@ -103,7 +103,6 @@ DEFINE_FIND_FUNC(16, uint16_t, string_length16)
 DEFINE_FIND_FUNC(32, uint32_t, string_length32)
 DEFINE_FIND_FUNC(64, uint64_t, string_length64)
 
-// Funções de conversão
 #define DEFINE_CONVERT_FUNC(suffix, type) \
 type* convert_to_uint##suffix(Arena* arena, const char* str) { \
     size_t len = strlen(str); \
@@ -121,7 +120,6 @@ DEFINE_CONVERT_FUNC(16, uint16_t)
 DEFINE_CONVERT_FUNC(32, uint32_t)
 DEFINE_CONVERT_FUNC(64, uint64_t)
 
-// Métodos de string
 #define DEFINE_STRING_METHOD(suffix, type, to_upper_func, to_lower_func) \
 type arena_string##suffix##_char_at(const ArenaString##suffix* str, size_t index) { \
     if (index >= str->length) return 0; \
@@ -369,7 +367,7 @@ ArenaString8Array arena_string8_split(Arena* arena, const ArenaString8* str, con
         temp += pos + sep_len;
         remaining -= pos + sep_len;
     }
-    count++; // Último segmento
+    count++; 
     ArenaResult alloc_result = arena_alloc(arena, count * sizeof(ArenaString8*), alignof(ArenaString8*));
     if (alloc_result.error) {
         ArenaString8Array result = {NULL, 0};
