@@ -13,8 +13,6 @@ void test_assert_equal_str(const char* test_name, const char* expected, const ch
 }
 void test_find_string8(Arena* arena) {
     ArenaString8* str = arena_string8_create(arena, "Hello, world!");
-    printf("Enter Here\n");
-
 
     size_t index = arena_string8_find((const ArenaString8*)str, "world");
 

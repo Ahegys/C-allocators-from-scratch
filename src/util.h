@@ -7,6 +7,6 @@ typedef struct { \
     data_type data_name; \
 } name;
 
-DEFINE_TUPLE(ArenaResult, int*, error, void*, data)
 
+DEFINE_TUPLE(ArenaResult, int*, error, void*, data)
 #endif // __UTIL_H__
