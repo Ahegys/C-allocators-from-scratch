@@ -21,6 +21,8 @@ void test_find_string8(Arena* arena) {
     } else {
         printf("[FAIL] arena_string8_find: Expected index 7, got %zu\n", index);
     }
+    ArenaString8 *data = arena_string8_capitalize(arena, str);
+    printf("teste: [%s]\n", data->data);
 }
 
 void test_find_string16(Arena* arena) {
@@ -117,7 +119,6 @@ void run_arena_strings_tests() {
     INIT_ARENA(arena, 10); 
     
     printf("Running arena_strings tests...\n");
-    
     test_find_string8(&arena);
 
     printf("Enter Here\n");
@@ -127,7 +128,13 @@ void run_arena_strings_tests() {
     test_replace_string16(&arena);
     test_replace_string32(&arena);
     test_replace_string64(&arena);
-    
+    ArenaString8* str = arena_string8_create(&arena, "  Hello World  ");
+    ArenaString8* upper = arena_string8_to_upper_case(&arena, str);
+    printf("Upper: %s\n", upper->data);
+    ArenaString8* trimmed = arena_string8_trim(&arena, str);
+    printf("Trimmed: %s\n", trimmed->data);
+    ArenaString8* padded = arena_string8_pad_start(&arena, str, 20,"123");
+    printf("Padded: %s\n", padded->data); 
     RESET_ARENA(&arena);
     printf("arena_strings tests completed.\n");
 }
