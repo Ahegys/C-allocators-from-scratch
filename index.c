@@ -11,9 +11,11 @@ void test_assert_equal_str(const char* test_name, const char* expected, const ch
         printf("[FAIL] %s: Expected '%s', got '%s'\n", test_name, expected, actual);
     }
 }
-
 void test_find_string8(Arena* arena) {
     ArenaString8* str = arena_string8_create(arena, "Hello, world!");
+    printf("Enter Here\n");
+
+
     size_t index = arena_string8_find((const ArenaString8*)str, "world");
 
     if (index == 7) {
@@ -110,13 +112,17 @@ void test_replace_string64(Arena* arena) {
     }
 }
 
+
 void run_arena_strings_tests() {
     Arena arena;
+
     INIT_ARENA(arena, 10); 
     
     printf("Running arena_strings tests...\n");
     
     test_find_string8(&arena);
+
+    printf("Enter Here\n");
     test_find_string16(&arena);
     test_find_string32(&arena);
     test_find_string64(&arena);
