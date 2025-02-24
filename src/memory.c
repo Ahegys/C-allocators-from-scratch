@@ -10,7 +10,7 @@ static ArenaResult make_success(void* data) {
 
 static ArenaResult make_error(int* error) {
     ArenaResult result;
-    result.error = error; // Corrigido: mantém o ponteiro
+    result.error = error;
     result.data = NULL;
     return result;
 }
