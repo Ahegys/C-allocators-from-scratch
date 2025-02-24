@@ -90,7 +90,7 @@ ArenaString32* arena_string32_create(Arena* arena, const uint32_t* input) {
 
     str->data = (uint32_t*)data_result.data;
 
-    if (data_result.error || !str->data) {
+    if (data_result.error) {
         return NULL;
     }
 
