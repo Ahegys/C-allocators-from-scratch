@@ -1,4 +1,6 @@
 #include "arena_strings.h"
+#include "memory.h"
+#include "util.h"
 #include <stdalign.h>
 #include <string.h>
 
@@ -28,117 +30,150 @@ static size_t string_length64(const uint64_t* str) {
 
 ArenaString8* arena_string8_create(Arena* arena, const char* input) {
     size_t len = string_length8(input);
-    ArenaString8* str = (ArenaString8*) arena_alloc(arena, sizeof(ArenaString8), alignof(ArenaString8));
+    ArenaResult alloc_result = arena_alloc(arena, sizeof(ArenaString8), alignof(ArenaString8));
+    if (alloc_result.error) return NULL;
+    ArenaString8* str = (ArenaString8*)alloc_result.data;
     str->length = len;
     str->capacity = len + 1;
-    str->data = (char*) arena_alloc(arena, str->capacity, alignof(char));
-    if (str->data) {
-        memcpy(str->data, input, len);
-        str->data[len] = '\0';
+    ArenaResult data_result = arena_alloc(arena, str->capacity, alignof(char));
+    str->data = (char*)data_result.data;
+    if (data_result.error || !str->data) {
+        return NULL; // Falha na alocação do data
     }
+    memcpy(str->data, input, len);
+    str->data[len] = '\0';
     return str;
 }
 
 ArenaString16* arena_string16_create(Arena* arena, const uint16_t* input) {
     size_t len = string_length16(input);
-    ArenaString16* str = (ArenaString16*) arena_alloc(arena, sizeof(ArenaString16), alignof(ArenaString16));
+    ArenaResult alloc_result = arena_alloc(arena, sizeof(ArenaString16), alignof(ArenaString16));
+    if (alloc_result.error) return NULL;
+    ArenaString16* str = (ArenaString16*)alloc_result.data;
     str->length = len;
     str->capacity = len + 1;
-    str->data = (uint16_t*) arena_alloc(arena, str->capacity * sizeof(uint16_t), alignof(uint16_t));
-    if (str->data) {
-        memcpy(str->data, input, len * sizeof(uint16_t));
-        str->data[len] = 0;
+    ArenaResult data_result = arena_alloc(arena, str->capacity * sizeof(uint16_t), alignof(uint16_t));
+    str->data = (uint16_t*)data_result.data;
+    if (data_result.error || !str->data) {
+        return NULL;
     }
+    memcpy(str->data, input, len * sizeof(uint16_t));
+    str->data[len] = 0;
     return str;
 }
 
 ArenaString32* arena_string32_create(Arena* arena, const uint32_t* input) {
     size_t len = string_length32(input);
-    ArenaString32* str = (ArenaString32*) arena_alloc(arena, sizeof(ArenaString32), alignof(ArenaString32));
+    ArenaResult alloc_result = arena_alloc(arena, sizeof(ArenaString32), alignof(ArenaString32));
+    if (alloc_result.error) return NULL;
+    ArenaString32* str = (ArenaString32*)alloc_result.data;
     str->length = len;
     str->capacity = len + 1;
-    str->data = (uint32_t*) arena_alloc(arena, str->capacity * sizeof(uint32_t), alignof(uint32_t));
-    if (str->data) {
-        memcpy(str->data, input, len * sizeof(uint32_t));
-        str->data[len] = 0;
+    ArenaResult data_result = arena_alloc(arena, str->capacity * sizeof(uint32_t), alignof(uint32_t));
+    str->data = (uint32_t*)data_result.data;
+    if (data_result.error || !str->data) {
+        return NULL;
     }
+    memcpy(str->data, input, len * sizeof(uint32_t));
+    str->data[len] = 0;
     return str;
 }
 
 ArenaString64* arena_string64_create(Arena* arena, const uint64_t* input) {
     size_t len = string_length64(input);
-    ArenaString64* str = (ArenaString64*) arena_alloc(arena, sizeof(ArenaString64), alignof(ArenaString64));
+    ArenaResult alloc_result = arena_alloc(arena, sizeof(ArenaString64), alignof(ArenaString64));
+    if (alloc_result.error) return NULL;
+    ArenaString64* str = (ArenaString64*)alloc_result.data;
     str->length = len;
     str->capacity = len + 1;
-    str->data = (uint64_t*) arena_alloc(arena, str->capacity * sizeof(uint64_t), alignof(uint64_t));
-    if (str->data) {
-        memcpy(str->data, input, len * sizeof(uint64_t));
-        str->data[len] = 0;
+    ArenaResult data_result = arena_alloc(arena, str->capacity * sizeof(uint64_t), alignof(uint64_t));
+    str->data = (uint64_t*)data_result.data;
+    if (data_result.error || !str->data) {
+        return NULL;
     }
+    memcpy(str->data, input, len * sizeof(uint64_t));
+    str->data[len] = 0;
     return str;
 }
 
 ArenaString8* arena_string8_concat(Arena* arena, const ArenaString8* s1, const ArenaString8* s2) {
     size_t new_length = s1->length + s2->length;
-    ArenaString8* new_str = (ArenaString8*) arena_alloc(arena, sizeof(ArenaString8), alignof(ArenaString8));
+    ArenaResult alloc_result = arena_alloc(arena, sizeof(ArenaString8), alignof(ArenaString8));
+    if (alloc_result.error) return NULL;
+    ArenaString8* new_str = (ArenaString8*)alloc_result.data;
     new_str->length = new_length;
     new_str->capacity = new_length + 1;
-    new_str->data = (char*) arena_alloc(arena, new_str->capacity, alignof(char));
-    if (new_str->data) {
-        memcpy(new_str->data, s1->data, s1->length);
-        memcpy(new_str->data + s1->length, s2->data, s2->length);
-        new_str->data[new_length] = '\0';
+    ArenaResult data_result = arena_alloc(arena, new_str->capacity, alignof(char));
+    new_str->data = (char*)data_result.data;
+    if (data_result.error || !new_str->data) {
+        return NULL;
     }
+    memcpy(new_str->data, s1->data, s1->length);
+    memcpy(new_str->data + s1->length, s2->data, s2->length);
+    new_str->data[new_length] = '\0';
     return new_str;
 }
 
 ArenaString16* arena_string16_concat(Arena* arena, const ArenaString16* s1, const ArenaString16* s2) {
     size_t new_length = s1->length + s2->length;
-    ArenaString16* new_str = (ArenaString16*) arena_alloc(arena, sizeof(ArenaString16), alignof(ArenaString16));
+    ArenaResult alloc_result = arena_alloc(arena, sizeof(ArenaString16), alignof(ArenaString16));
+    if (alloc_result.error) return NULL;
+    ArenaString16* new_str = (ArenaString16*)alloc_result.data;
     new_str->length = new_length;
     new_str->capacity = new_length + 1;
-    new_str->data = (uint16_t*) arena_alloc(arena, new_str->capacity * sizeof(uint16_t), alignof(uint16_t));
-    if (new_str->data) {
-        memcpy(new_str->data, s1->data, s1->length * sizeof(uint16_t));
-        memcpy(new_str->data + s1->length, s2->data, s2->length * sizeof(uint16_t));
-        new_str->data[new_length] = 0;
+    ArenaResult data_result = arena_alloc(arena, new_str->capacity * sizeof(uint16_t), alignof(uint16_t));
+    new_str->data = (uint16_t*)data_result.data;
+    if (data_result.error || !new_str->data) {
+        return NULL;
     }
+    memcpy(new_str->data, s1->data, s1->length * sizeof(uint16_t));
+    memcpy(new_str->data + s1->length, s2->data, s2->length * sizeof(uint16_t));
+    new_str->data[new_length] = 0;
     return new_str;
 }
 
 ArenaString32* arena_string32_concat(Arena* arena, const ArenaString32* s1, const ArenaString32* s2) {
     size_t new_length = s1->length + s2->length;
-    ArenaString32* new_str = (ArenaString32*) arena_alloc(arena, sizeof(ArenaString32), alignof(ArenaString32));
+    ArenaResult alloc_result = arena_alloc(arena, sizeof(ArenaString32), alignof(ArenaString32));
+    if (alloc_result.error) return NULL;
+    ArenaString32* new_str = (ArenaString32*)alloc_result.data;
     new_str->length = new_length;
     new_str->capacity = new_length + 1;
-    new_str->data = (uint32_t*) arena_alloc(arena, new_str->capacity * sizeof(uint32_t), alignof(uint32_t));
-    if (new_str->data) {
-        memcpy(new_str->data, s1->data, s1->length * sizeof(uint32_t));
-        memcpy(new_str->data + s1->length, s2->data, s2->length * sizeof(uint32_t));
-        new_str->data[new_length] = 0;
+    ArenaResult data_result = arena_alloc(arena, new_str->capacity * sizeof(uint32_t), alignof(uint32_t));
+    new_str->data = (uint32_t*)data_result.data;
+    if (data_result.error || !new_str->data) {
+        return NULL;
     }
+    memcpy(new_str->data, s1->data, s1->length * sizeof(uint32_t));
+    memcpy(new_str->data + s1->length, s2->data, s2->length * sizeof(uint32_t));
+    new_str->data[new_length] = 0;
     return new_str;
 }
 
 ArenaString64* arena_string64_concat(Arena* arena, const ArenaString64* s1, const ArenaString64* s2) {
     size_t new_length = s1->length + s2->length;
-    ArenaString64* new_str = (ArenaString64*) arena_alloc(arena, sizeof(ArenaString64), alignof(ArenaString64));
+    ArenaResult alloc_result = arena_alloc(arena, sizeof(ArenaString64), alignof(ArenaString64));
+    if (alloc_result.error) return NULL;
+    ArenaString64* new_str = (ArenaString64*)alloc_result.data;
     new_str->length = new_length;
     new_str->capacity = new_length + 1;
-    new_str->data = (uint64_t*) arena_alloc(arena, new_str->capacity * sizeof(uint64_t), alignof(uint64_t));
-    if (new_str->data) {
-        memcpy(new_str->data, s1->data, s1->length * sizeof(uint64_t));
-        memcpy(new_str->data + s1->length, s2->data, s2->length * sizeof(uint64_t));
-        new_str->data[new_length] = 0;
+    ArenaResult data_result = arena_alloc(arena, new_str->capacity * sizeof(uint64_t), alignof(uint64_t));
+    new_str->data = (uint64_t*)data_result.data;
+    if (data_result.error || !new_str->data) {
+        return NULL;
     }
+    memcpy(new_str->data, s1->data, s1->length * sizeof(uint64_t));
+    memcpy(new_str->data + s1->length, s2->data, s2->length * sizeof(uint64_t));
+    new_str->data[new_length] = 0;
     return new_str;
 }
 
 #define DEFINE_CONVERT_FUNC(suffix, type)                                       \
 type* convert_to_uint##suffix(Arena* arena, const char* str) {      \
     size_t len = strlen(str);         \
-    type* result = (type*) arena_alloc(arena, (len + 1) * sizeof(type),          \
-                                       alignof(type));                          \
+    ArenaResult alloc_result = arena_alloc(arena, (len + 1) * sizeof(type), alignof(type)); \
+    if (alloc_result.error) return NULL; \
+    type* result = (type*)alloc_result.data;                          \
     size_t i = 0, n = len;                                                     \
     for (; i + 3 < n; i += 4) {                                                \
         result[i]   = (type) str[i];                                           \
@@ -175,7 +210,7 @@ DEFINE_FIND_FUNC(16, uint16_t, string_length16)
 DEFINE_FIND_FUNC(32, uint32_t, string_length32)
 DEFINE_FIND_FUNC(64, uint64_t, string_length64)
 
-// Funções replace corrigidas
+// Funções replace (já corrigidas no seu código original, apenas mantendo consistência)
 ArenaString16* arena_string16_replace(Arena* arena, const ArenaString16* str, const uint16_t* old_sub, const uint16_t* new_sub) {
     size_t old_len = string_length16(old_sub);
     size_t new_len = string_length16(new_sub);
@@ -195,27 +230,31 @@ ArenaString16* arena_string16_replace(Arena* arena, const ArenaString16* str, co
     }
 
     size_t new_length = str->length + count * (new_len - old_len);
-    ArenaString16* new_str = (ArenaString16*) arena_alloc(arena, sizeof(ArenaString16), alignof(ArenaString16));
+    ArenaResult alloc_result = arena_alloc(arena, sizeof(ArenaString16), alignof(ArenaString16));
+    if (alloc_result.error) return NULL;
+    ArenaString16* new_str = (ArenaString16*)alloc_result.data;
     new_str->length = new_length;
     new_str->capacity = new_length + 1;
-    new_str->data = (uint16_t*) arena_alloc(arena, new_str->capacity * sizeof(uint16_t), alignof(uint16_t));
-    if (new_str->data) {
-        uint16_t* dest = new_str->data;
-        const uint16_t* src = str->data;
-        remaining = str->length;
-        while ((pos = arena_string16_find(&(ArenaString16){(uint16_t*)src, remaining, 0}, old_sub)) != SIZE_MAX) {
-            if (pos > remaining) break;
-            size_t copy_len = pos;
-            memcpy(dest, src, copy_len * sizeof(uint16_t));
-            dest += copy_len;
-            memcpy(dest, new_sub, new_len * sizeof(uint16_t));
-            dest += new_len;
-            src += pos + old_len;
-            remaining -= pos + old_len;
-        }
-        memcpy(dest, src, remaining * sizeof(uint16_t));
-        new_str->data[new_length] = 0;
+    ArenaResult data_result = arena_alloc(arena, new_str->capacity * sizeof(uint16_t), alignof(uint16_t));
+    new_str->data = (uint16_t*)data_result.data;
+    if (data_result.error || !new_str->data) {
+        return NULL;
     }
+    uint16_t* dest = new_str->data;
+    const uint16_t* src = str->data;
+    remaining = str->length;
+    while ((pos = arena_string16_find(&(ArenaString16){(uint16_t*)src, remaining, 0}, old_sub)) != SIZE_MAX) {
+        if (pos > remaining) break;
+        size_t copy_len = pos;
+        memcpy(dest, src, copy_len * sizeof(uint16_t));
+        dest += copy_len;
+        memcpy(dest, new_sub, new_len * sizeof(uint16_t));
+        dest += new_len;
+        src += pos + old_len;
+        remaining -= pos + old_len;
+    }
+    memcpy(dest, src, remaining * sizeof(uint16_t));
+    new_str->data[new_length] = 0;
     return new_str;
 }
 
@@ -238,27 +277,31 @@ ArenaString32* arena_string32_replace(Arena* arena, const ArenaString32* str, co
     }
 
     size_t new_length = str->length + count * (new_len - old_len);
-    ArenaString32* new_str = (ArenaString32*) arena_alloc(arena, sizeof(ArenaString32), alignof(ArenaString32));
+    ArenaResult alloc_result = arena_alloc(arena, sizeof(ArenaString32), alignof(ArenaString32));
+    if (alloc_result.error) return NULL;
+    ArenaString32* new_str = (ArenaString32*)alloc_result.data;
     new_str->length = new_length;
     new_str->capacity = new_length + 1;
-    new_str->data = (uint32_t*) arena_alloc(arena, new_str->capacity * sizeof(uint32_t), alignof(uint32_t));
-    if (new_str->data) {
-        uint32_t* dest = new_str->data;
-        const uint32_t* src = str->data;
-        remaining = str->length;
-        while ((pos = arena_string32_find(&(ArenaString32){(uint32_t*)src, remaining, 0}, old_sub)) != SIZE_MAX) {
-            if (pos > remaining) break;
-            size_t copy_len = pos;
-            memcpy(dest, src, copy_len * sizeof(uint32_t));
-            dest += copy_len;
-            memcpy(dest, new_sub, new_len * sizeof(uint32_t));
-            dest += new_len;
-            src += pos + old_len;
-            remaining -= pos + old_len;
-        }
-        memcpy(dest, src, remaining * sizeof(uint32_t));
-        new_str->data[new_length] = 0;
+    ArenaResult data_result = arena_alloc(arena, new_str->capacity * sizeof(uint32_t), alignof(uint32_t));
+    new_str->data = (uint32_t*)data_result.data;
+    if (data_result.error || !new_str->data) {
+        return NULL;
     }
+    uint32_t* dest = new_str->data;
+    const uint32_t* src = str->data;
+    remaining = str->length;
+    while ((pos = arena_string32_find(&(ArenaString32){(uint32_t*)src, remaining, 0}, old_sub)) != SIZE_MAX) {
+        if (pos > remaining) break;
+        size_t copy_len = pos;
+        memcpy(dest, src, copy_len * sizeof(uint32_t));
+        dest += copy_len;
+        memcpy(dest, new_sub, new_len * sizeof(uint32_t));
+        dest += new_len;
+        src += pos + old_len;
+        remaining -= pos + old_len;
+    }
+    memcpy(dest, src, remaining * sizeof(uint32_t));
+    new_str->data[new_length] = 0;
     return new_str;
 }
 
@@ -281,26 +324,30 @@ ArenaString64* arena_string64_replace(Arena* arena, const ArenaString64* str, co
     }
 
     size_t new_length = str->length + count * (new_len - old_len);
-    ArenaString64* new_str = (ArenaString64*) arena_alloc(arena, sizeof(ArenaString64), alignof(ArenaString64));
+    ArenaResult alloc_result = arena_alloc(arena, sizeof(ArenaString64), alignof(ArenaString64));
+    if (alloc_result.error) return NULL;
+    ArenaString64* new_str = (ArenaString64*)alloc_result.data;
     new_str->length = new_length;
     new_str->capacity = new_length + 1;
-    new_str->data = (uint64_t*) arena_alloc(arena, new_str->capacity * sizeof(uint64_t), alignof(uint64_t));
-    if (new_str->data) {
-        uint64_t* dest = new_str->data;
-        const uint64_t* src = str->data;
-        remaining = str->length;
-        while ((pos = arena_string64_find(&(ArenaString64){(uint64_t*)src, remaining, 0}, old_sub)) != SIZE_MAX) {
-            if (pos > remaining) break;
-            size_t copy_len = pos;
-            memcpy(dest, src, copy_len * sizeof(uint64_t));
-            dest += copy_len;
-            memcpy(dest, new_sub, new_len * sizeof(uint64_t));
-            dest += new_len;
-            src += pos + old_len;
-            remaining -= pos + old_len;
-        }
-        memcpy(dest, src, remaining * sizeof(uint64_t));
-        new_str->data[new_length] = 0;
+    ArenaResult data_result = arena_alloc(arena, new_str->capacity * sizeof(uint64_t), alignof(uint64_t));
+    new_str->data = (uint64_t*)data_result.data;
+    if (data_result.error || !new_str->data) {
+        return NULL;
     }
+    uint64_t* dest = new_str->data;
+    const uint64_t* src = str->data;
+    remaining = str->length;
+    while ((pos = arena_string64_find(&(ArenaString64){(uint64_t*)src, remaining, 0}, old_sub)) != SIZE_MAX) {
+        if (pos > remaining) break;
+        size_t copy_len = pos;
+        memcpy(dest, src, copy_len * sizeof(uint64_t));
+        dest += copy_len;
+        memcpy(dest, new_sub, new_len * sizeof(uint64_t));
+        dest += new_len;
+        src += pos + old_len;
+        remaining -= pos + old_len;
+    }
+    memcpy(dest, src, remaining * sizeof(uint64_t));
+    new_str->data[new_length] = 0;
     return new_str;
 }
