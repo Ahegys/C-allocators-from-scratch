@@ -29,7 +29,6 @@ static size_t string_length64(const uint64_t* str) {
     return len;
 }
 
-// Funções auxiliares de conversão de caso
 static char to_upper8(char c) {
     return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
 }
@@ -62,7 +61,6 @@ static uint64_t to_lower64(uint64_t c) {
     return (c >= 'A' && c <= 'Z') ? c - 'A' + 'a' : c;
 }
 
-// Funções de criação
 #define DEFINE_STRING_CREATE(suffix, type, length_func) \
 ArenaString##suffix* arena_string##suffix##_create(Arena* arena, const type* input) { \
     size_t len = length_func(input); \
@@ -84,7 +82,6 @@ DEFINE_STRING_CREATE(16, uint16_t, string_length16)
 DEFINE_STRING_CREATE(32, uint32_t, string_length32)
 DEFINE_STRING_CREATE(64, uint64_t, string_length64)
 
-// Funções de busca (adicionadas novamente)
 #define DEFINE_FIND_FUNC(suffix, char_type, length_func) \
 size_t arena_string##suffix##_find(const ArenaString##suffix* str, const char_type* sub) { \
     size_t sub_len = length_func(sub); \
