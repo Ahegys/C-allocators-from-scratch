@@ -96,26 +96,24 @@ void test_replace_string64(Arena* arena) {
     }
 }
 
-
 void test_screen_buffer(Arena* arena) {
-    printf("\nTestando o Screen Buffer com Janela...\n");
+    printf("\nTesting the Screen Buffer with Window...\n");
 
-    setlocale(LC_ALL, "");
+    setlocale(LC_ALL, "en_US.UTF-8");
+    fwide(stdout, 1);
 
     wchar_t* screen_buffer = create_screen_buffer(arena);
     if (screen_buffer == NULL) {
-        printf("Falha ao criar o screen buffer.\n");
+        printf("Failed to create screen buffer.\n");
         return;
     }
 
     int counter = 0; 
-
     struct timespec time_prev, time_now;
     clock_gettime(CLOCK_MONOTONIC, &time_prev);
 
     while (1) {
         wmemset(screen_buffer, L' ', SCREEN_BUFFER);
-
         draw_window_border(screen_buffer);
 
         wchar_t counterStr[16];
@@ -130,13 +128,13 @@ void test_screen_buffer(Arena* arena) {
         swprintf(fpsStr, 16, L"%.2f", fps);
 
         const wchar_t* tableContent1[3][3] = {
-            {L"Nome",  L"Idade", L"Cidade"},
+            {L"Name",  L"Age", L"City"},
             {L"Joao",  counterStr, L"SP"},
             {L"Maria", L"30",     L"RJ"}
         };
 
         const wchar_t* tableContent2[3][3] = {
-            {L"Nome",  L"Idade", L"Cidade"},
+            {L"Name",  L"Age", L"City"},
             {L"Ana",   counterStr, L"MG"},
             {L"Pedro", L"40",     L"BA"}
         };
@@ -149,12 +147,12 @@ void test_screen_buffer(Arena* arena) {
         draw_table_widget(screen_buffer, 40, 1, 3, 3, tableContent2);
         draw_table_widget(screen_buffer, 80, 1, 1, 2, fpsTable);
 
-        wprintf(L"\033[H\033[J");
+        wprintf(L"\033[2J\033[H");
+        fflush(stdout);
 
         render_screen_buffer(screen_buffer);
 
         usleep(6944);
-
         counter++;
     }
 }
