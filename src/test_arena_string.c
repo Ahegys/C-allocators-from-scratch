@@ -1,4 +1,7 @@
 #include "test_arena_string.h"
+#include "screen_buffer.h"
+#include <unistd.h>
+#include <time.h>   
 void test_assert_equal_str(const char* test_name, const char* expected, const char* actual) {
     if (strcmp(expected, actual) == 0) {
         printf("[PASS] %s: Expected '%s', got '%s'\n", test_name, expected, actual);
@@ -93,6 +96,7 @@ void test_replace_string64(Arena* arena) {
     }
 }
 
+
 void test_screen_buffer(Arena* arena) {
     printf("\nTestando o Screen Buffer com Janela...\n");
 
@@ -104,25 +108,57 @@ void test_screen_buffer(Arena* arena) {
         return;
     }
 
-    write_to_screen_buffer(screen_buffer, 0, 0, L'H');
-    write_to_screen_buffer(screen_buffer, 1, 0, L'e');
-    write_to_screen_buffer(screen_buffer, 2, 0, L'l');
-    write_to_screen_buffer(screen_buffer, 3, 0, L'l');
-    write_to_screen_buffer(screen_buffer, 4, 0, L'o');
-    write_to_screen_buffer(screen_buffer, 18, 4, L'ǁ');
+    int counter = 0; 
 
-    draw_window_border(screen_buffer);
+    struct timespec time_prev, time_now;
+    clock_gettime(CLOCK_MONOTONIC, &time_prev);
 
-    const wchar_t* content[3][3] = {
-        {L"Nome", L"Idade", L"Cidade"},
-        {L"João", L"25", L"São Paulo"},
-        {L"João", L"25", L"São Paulo"}
-    };
-    draw_table_widget(screen_buffer, 2,1, 3, 3, content); 
-    draw_table_widget(screen_buffer, 40,1, 3, 3, content);
+    while (1) {
+        wmemset(screen_buffer, L' ', SCREEN_BUFFER);
 
-    render_screen_buffer(screen_buffer);
+        draw_window_border(screen_buffer);
+
+        wchar_t counterStr[16];
+        swprintf(counterStr, 16, L"%d", counter);
+
+        clock_gettime(CLOCK_MONOTONIC, &time_now);
+        double delta = (time_now.tv_sec - time_prev.tv_sec) + (time_now.tv_nsec - time_prev.tv_nsec) / 1e9;
+        double fps = 1.0 / delta;
+        time_prev = time_now;
+
+        wchar_t fpsStr[16];
+        swprintf(fpsStr, 16, L"%.2f", fps);
+
+        const wchar_t* tableContent1[3][3] = {
+            {L"Nome",  L"Idade", L"Cidade"},
+            {L"Joao",  counterStr, L"SP"},
+            {L"Maria", L"30",     L"RJ"}
+        };
+
+        const wchar_t* tableContent2[3][3] = {
+            {L"Nome",  L"Idade", L"Cidade"},
+            {L"Ana",   counterStr, L"MG"},
+            {L"Pedro", L"40",     L"BA"}
+        };
+
+        const wchar_t* fpsTable[1][2] = {
+            {L"FPS", fpsStr}
+        };
+
+        draw_table_widget(screen_buffer, 2, 1, 3, 3, tableContent1);
+        draw_table_widget(screen_buffer, 40, 1, 3, 3, tableContent2);
+        draw_table_widget(screen_buffer, 80, 1, 1, 2, fpsTable);
+
+        wprintf(L"\033[H\033[J");
+
+        render_screen_buffer(screen_buffer);
+
+        usleep(6944);
+
+        counter++;
+    }
 }
+
 
 void run_arena_strings_tests() {
     Arena arena;

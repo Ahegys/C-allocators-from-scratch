@@ -9,10 +9,9 @@
 wchar_t* create_screen_buffer(Arena* arena) {
     ArenaResult buffer = arena_alloc(arena, SCREEN_BUFFER * sizeof(wchar_t), alignof(wchar_t));
     if (buffer.error) {
-        printf("Error: Failed to allocate memory for the screen buffer.\n");
+        perror("Error: Failed to allocate memory for the screen buffer.\n");
         return NULL;
     }
-    printf("Screen buffer allocated at %p\n", buffer.data);
     wmemset(buffer.data, L' ', SCREEN_BUFFER);
     return (wchar_t*)buffer.data;
 }
@@ -66,10 +65,9 @@ void draw_table_widget(wchar_t* buffer, int start_x, int start_y, int rows, int 
     int table_width = cols * col_width + cols + 1;
     int table_height = rows * row_height + rows + 1;
 
-    printf("Drawing table at (%d, %d) with width %d and height %d\n", start_x, start_y, table_width, table_height);
 
     if (start_x + table_width > WIDTH || start_y + table_height > HEIGHT) {
-        printf("Error: Table out of bounds of the buffer.\n");
+        perror("Error: Table out of bounds of the buffer.\n");
         return;
     }
 
