@@ -14,14 +14,12 @@
 
 static struct termios original_term;
 
-// Configurações do mapa e tela
 #define MAP_WIDTH 10
 #define MAP_HEIGHT 10
 #define SCREEN_WIDTH 200
 #define SCREEN_HEIGHT 250
-#define FOV 60.0 // Campo de visão em graus
+#define FOV 60.0 
 
-// Mapa 2D (1 = parede, 0 = vazio)
 static int map[MAP_HEIGHT][MAP_WIDTH] = {
     {1,1,1,1,1,1,1,1,1,1},
     {1,0,0,0,0,0,0,0,0,1},
