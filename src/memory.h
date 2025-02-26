@@ -7,7 +7,7 @@
 
 #define MEMORY_POOL_SIZE (2 * 1024 * 1024)
 typedef unsigned long UL;
-static char memory_pool[MEMORY_POOL_SIZE];
+static char memory_pool[MEMORY_POOL_SIZE] __attribute__((aligned(16))); 
 
 typedef struct Arena {
     char* start;

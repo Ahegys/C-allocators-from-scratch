@@ -56,8 +56,7 @@ ArenaResult arena_alloc(Arena* arena, UL size, UL alignment) {
         return make_error(&err);
     }
     UL current = (UL)arena->current;
-    UL aligned = (current + alignment - 1) & ~(alignment - 1);
-    UL padding = aligned - current;
+    UL padding = (current % alignment) ? (alignment - (current % alignment)) : 0;
 
     if (arena->current + padding + size > arena->end) {
         static int err = -1;
@@ -65,8 +64,7 @@ ArenaResult arena_alloc(Arena* arena, UL size, UL alignment) {
     }
 
     arena->current += padding + size;
-    void* allocated = (void*)(arena->current - size);
-    return make_success(allocated);
+    return make_success((void*)(arena->current - size));
 }
 
 ArenaResult arena_init(Arena* arena, UL scopes_size) {

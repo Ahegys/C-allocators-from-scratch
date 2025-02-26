@@ -1,7 +1,10 @@
 #include "test_arena_string.h"
 #include "screen_buffer.h"
 #include <unistd.h>
-#include <time.h>   
+#include <time.h>
+#include <fcntl.h> // Para configurar leitura não-bloqueante
+#include <wchar.h>
+
 void test_assert_equal_str(const char* test_name, const char* expected, const char* actual) {
     if (strcmp(expected, actual) == 0) {
         printf("[PASS] %s: Expected '%s', got '%s'\n", test_name, expected, actual);
@@ -97,10 +100,8 @@ void test_replace_string64(Arena* arena) {
 }
 
 void test_screen_buffer(Arena* arena) {
-    printf("\nTesting the Screen Buffer with Window...\n");
-
+    printf("\nTesting Screen Buffer with FPS and Hover...\n");
     setlocale(LC_ALL, "en_US.UTF-8");
-    fwide(stdout, 1);
 
     wchar_t* screen_buffer = create_screen_buffer(arena);
     if (screen_buffer == NULL) {
@@ -108,9 +109,12 @@ void test_screen_buffer(Arena* arena) {
         return;
     }
 
-    int counter = 0; 
+    configure_terminal();
+
+    int counter = 0;
     struct timespec time_prev, time_now;
     clock_gettime(CLOCK_MONOTONIC, &time_prev);
+    int hover_x = -1, hover_y = -1;
 
     while (1) {
         wmemset(screen_buffer, L' ', SCREEN_BUFFER);
@@ -128,35 +132,31 @@ void test_screen_buffer(Arena* arena) {
         swprintf(fpsStr, 16, L"%.2f", fps);
 
         const wchar_t* tableContent1[3][3] = {
-            {L"Name",  L"Age", L"City"},
-            {L"Joao",  counterStr, L"SP"},
-            {L"Maria", L"30",     L"RJ"}
+            {L"Name", L"Age", L"City"},
+            {L"Joao", counterStr, L"SP"},
+            {L"Maria", L"30", L"RJ"}
         };
 
-        const wchar_t* tableContent2[3][3] = {
-            {L"Name",  L"Age", L"City"},
-            {L"Ana",   counterStr, L"MG"},
-            {L"Pedro", L"40",     L"BA"}
-        };
-
-        const wchar_t* fpsTable[1][2] = {
-            {L"FPS", fpsStr}
+        const wchar_t* tableFps[1][2] = {
+            {L"FPS", fpsStr,},
         };
 
         draw_table_widget(screen_buffer, 2, 1, 3, 3, tableContent1);
-        draw_table_widget(screen_buffer, 40, 1, 3, 3, tableContent2);
-        draw_table_widget(screen_buffer, 80, 1, 1, 2, fpsTable);
+        draw_table_widget(screen_buffer, 60, 1, 1, 2, tableFps);
 
-        wprintf(L"\033[2J\033[H");
-        fflush(stdout);
+        char input[10];
+        int n = read(STDIN_FILENO, input, sizeof(input));
+        if (n > 0 && input[0] == '\033' && input[1] == '[' && input[2] == 'M') {
+            hover_x = input[4] - 33; 
+            hover_y = input[5] - 33; 
+        }
 
-        render_screen_buffer(screen_buffer);
+        render_screen_buffer_with_hover(screen_buffer, hover_x, hover_y);
 
         usleep(6944);
         counter++;
     }
 }
-
 
 void run_arena_strings_tests() {
     Arena arena;

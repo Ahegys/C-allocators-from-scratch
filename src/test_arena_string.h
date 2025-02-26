@@ -11,6 +11,6 @@ void test_find_string64(Arena* arena);
 void test_replace_string16(Arena* arena);
 void test_replace_string32(Arena* arena);
 void test_replace_string64(Arena* arena);
-void test_screen_buffer(Arena* arena);
+// void test_screen_buffer(Arena* arena);
 void run_arena_strings_tests();
 #endif
