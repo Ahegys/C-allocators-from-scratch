@@ -10,10 +10,37 @@
 #include <signal.h>
 #include "memory.h"
 #include "screen_buffer.h"
+#include <math.h>
 
 static struct termios original_term;
+
+// Configurações do mapa e tela
+#define MAP_WIDTH 10
+#define MAP_HEIGHT 10
+#define SCREEN_WIDTH 200
+#define SCREEN_HEIGHT 250
+#define FOV 60.0 // Campo de visão em graus
+
+// Mapa 2D (1 = parede, 0 = vazio)
+static int map[MAP_HEIGHT][MAP_WIDTH] = {
+    {1,1,1,1,1,1,1,1,1,1},
+    {1,0,0,0,0,0,0,0,0,1},
+    {1,0,1,0,0,0,0,1,0,1},
+    {1,0,1,0,0,0,0,1,0,1},
+    {1,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,1,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,1},
+    {1,0,1,0,0,0,0,1,0,1},
+    {1,0,0,0,0,0,0,0,0,1},
+    {1,1,1,1,1,1,1,1,1,1}
+};
+
+double posX = 2.0, posY = 2.0; 
+double dirX = -1.0, dirY = 0.0;
+double planeX = 0.0, planeY = 0.66;
+
 void signal_handler(int sig) {
-    printf("\033[?25h"); 
+    printf("\033[?25h");
     restore_terminal();
     exit(0);
 }
@@ -49,6 +76,137 @@ void restore_terminal() {
     printf("\033[?25h");
     tcsetattr(STDIN_FILENO, TCSANOW, &original_term);
     fcntl(STDIN_FILENO, F_SETFL, 0);
+}
+
+void process_input() {
+    char buffer[3];
+    int bytes_read;
+
+    while ((bytes_read = read(STDIN_FILENO, buffer, 3)) > 0) {
+        if (bytes_read == 1) {
+            switch (buffer[0]) {
+                case 'w':
+                    if (map[(int)(posY + dirY * 0.1)][(int)posX] == 0) posY += dirY * 0.1;
+                    if (map[(int)posY][(int)(posX + dirX * 0.1)] == 0) posX += dirX * 0.1;
+                    break;
+                case 's':
+                    if (map[(int)(posY - dirY * 0.1)][(int)posX] == 0) posY -= dirY * 0.1;
+                    if (map[(int)posY][(int)(posX - dirX * 0.1)] == 0) posX -= dirX * 0.1;
+                    break;
+                case 'a':
+                    if (map[(int)(posY - planeY * 0.1)][(int)posX] == 0) posY -= planeY * 0.1;
+                    if (map[(int)posY][(int)(posX - planeX * 0.1)] == 0) posX -= planeX * 0.1;
+                    break;
+                case 'd':
+                    if (map[(int)(posY + planeY * 0.1)][(int)posX] == 0) posY += planeY * 0.1;
+                    if (map[(int)posY][(int)(posX + planeX * 0.1)] == 0) posX += planeX * 0.1;
+                    break;
+            }
+        } else if (bytes_read == 3 && buffer[0] == 27 && buffer[1] == '[') {
+            switch (buffer[2]) {
+                case 'D':
+                    {
+                        double oldDirX = dirX;
+                        dirX = dirX * cos(-0.1) - dirY * sin(-0.1);
+                        dirY = oldDirX * sin(-0.1) + dirY * cos(-0.1);
+                        double oldPlaneX = planeX;
+                        planeX = planeX * cos(-0.1) - planeY * sin(-0.1);
+                        planeY = oldPlaneX * sin(-0.1) + planeY * cos(-0.1);
+                    }
+                    break;
+                case 'C':
+                    {
+                        double oldDirX = dirX;
+                        dirX = dirX * cos(0.1) - dirY * sin(0.1);
+                        dirY = oldDirX * sin(0.1) + dirY * cos(0.1);
+                        double oldPlaneX = planeX;
+                        planeX = planeX * cos(0.1) - planeY * sin(0.1);
+                        planeY = oldPlaneX * sin(0.1) + planeY * cos(0.1);
+                    }
+                    break;
+            }
+        }
+    }
+}
+void draw_raycasting_widget(wchar_t* buffer, int start_x, int start_y, int width, int height) {
+    const int stride = SCREEN_WIDTH;
+
+    // Verifica limites
+    if (start_x + width > SCREEN_WIDTH || start_y + height > SCREEN_HEIGHT) {
+        perror("Error: Raycasting widget out of bounds.\n");
+        return;
+    }
+
+    // Para cada coluna da tela
+    for (int x = 0; x < width; x++) {
+        double cameraX = 2 * x / (double)width - 1;
+        double rayDirX = dirX + planeX * cameraX;
+        double rayDirY = dirY + planeY * cameraX;
+
+        int mapX = (int)posX;
+        int mapY = (int)posY;
+
+        double deltaDistX = (rayDirX == 0) ? 1e30 : fabs(1 / rayDirX);
+        double deltaDistY = (rayDirY == 0) ? 1e30 : fabs(1 / rayDirY);
+        double sideDistX, sideDistY;
+        int stepX, stepY;
+        int hit = 0;
+        int side;
+
+        if (rayDirX < 0) {
+            stepX = -1;
+            sideDistX = (posX - mapX) * deltaDistX;
+        } else {
+            stepX = 1;
+            sideDistX = (mapX + 1.0 - posX) * deltaDistX;
+        }
+        if (rayDirY < 0) {
+            stepY = -1;
+            sideDistY = (posY - mapY) * deltaDistY;
+        } else {
+            stepY = 1;
+            sideDistY = (mapY + 1.0 - posY) * deltaDistY;
+        }
+
+        while (hit == 0) {
+            if (sideDistX < sideDistY) {
+                sideDistX += deltaDistX;
+                mapX += stepX;
+                side = 0;
+            } else {
+                sideDistY += deltaDistY;
+                mapY += stepY;
+                side = 1;
+            }
+            if (mapX < 0 || mapX >= MAP_WIDTH || mapY < 0 || mapY >= MAP_HEIGHT) break;
+            if (map[mapY][mapX] > 0) hit = 1;
+        }
+
+        double perpWallDist;
+        if (hit) {
+            if (side == 0) perpWallDist = (mapX - posX + (1 - stepX) / 2.0) / rayDirX;
+            else perpWallDist = (mapY - posY + (1 - stepY) / 2.0) / rayDirY;
+        } else {
+            perpWallDist = height;
+        }
+
+        int lineHeight = (int)(height / perpWallDist);
+        int drawStart = -lineHeight / 2 + height / 2;
+        if (drawStart < 0) drawStart = 0;
+        int drawEnd = lineHeight / 2 + height / 2;
+        if (drawEnd >= height) drawEnd = height - 1;
+
+        for (int y = 0; y < height; y++) {
+            int index = (start_y + y) * stride + (start_x + x);
+            if (y < drawStart) {
+                write_to_buffer(buffer, index, L' '); 
+            } else if (y <= drawEnd) {
+                write_to_buffer(buffer, index, L'█'); 
+            } else {
+                write_to_buffer(buffer, index, L' ');
+            }
+        }
+    }
 }
 
 void draw_window_border(wchar_t* buffer) {

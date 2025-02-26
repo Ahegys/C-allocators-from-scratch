@@ -6,7 +6,7 @@ OBJ_DIR = $(BUILD_DIR)/objs
 BIN_DIR = $(BUILD_DIR)/bin
 
 CC = gcc
-CFLAGS =-fsanitize=address -Wall -Wextra -O2 -I./src/
+CFLAGS =-fsanitize=address -Wall -Wextra -O2 -I./src/ -lm
 
 SRCS = $(wildcard $(SRC_DIR)/*.c) index.c
 OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/src/%.o,$(filter $(SRC_DIR)/%.c,$(SRCS))) \

@@ -20,4 +20,6 @@ void draw_table_widget(wchar_t* buffer, int start_x, int start_y, int rows, int 
 void render_screen_buffer_with_hover(wchar_t* buffer, int hover_x, int hover_y);
 void restore_terminal();
 void configure_terminal();
+void process_input();
+void draw_raycasting_widget(wchar_t* buffer, int start_x, int start_y, int width, int height);
 #endif

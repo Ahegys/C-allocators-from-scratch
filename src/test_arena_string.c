@@ -2,7 +2,7 @@
 #include "screen_buffer.h"
 #include <unistd.h>
 #include <time.h>
-#include <fcntl.h> // Para configurar leitura não-bloqueante
+#include <fcntl.h>
 #include <wchar.h>
 
 void test_assert_equal_str(const char* test_name, const char* expected, const char* actual) {
@@ -99,6 +99,9 @@ void test_replace_string64(Arena* arena) {
     }
 }
 
+
+
+
 void test_screen_buffer(Arena* arena) {
     printf("\nTesting Screen Buffer with FPS and Hover...\n");
     setlocale(LC_ALL, "en_US.UTF-8");
@@ -119,6 +122,8 @@ void test_screen_buffer(Arena* arena) {
     while (1) {
         wmemset(screen_buffer, L' ', SCREEN_BUFFER);
         draw_window_border(screen_buffer);
+        draw_raycasting_widget(screen_buffer, 0, 0, WIDTH, HEIGHT);
+        process_input();
 
         wchar_t counterStr[16];
         swprintf(counterStr, 16, L"%d", counter);
@@ -131,18 +136,18 @@ void test_screen_buffer(Arena* arena) {
         wchar_t fpsStr[16];
         swprintf(fpsStr, 16, L"%.2f", fps);
 
-        const wchar_t* tableContent1[3][3] = {
-            {L"Name", L"Age", L"City"},
-            {L"Joao", counterStr, L"SP"},
-            {L"Maria", L"30", L"RJ"}
-        };
+        // const wchar_t* tableContent1[3][3] = {
+        //     {L"Name", L"Age", L"City"},
+        //     {L"Joao", counterStr, L"SP"},
+        //     {L"Maria", L"30", L"RJ"}
+        // };
 
-        const wchar_t* tableFps[1][2] = {
-            {L"FPS", fpsStr,},
-        };
+        // const wchar_t* tableFps[1][2] = {
+        //     {L"FPS", fpsStr,},
+        // };
 
-        draw_table_widget(screen_buffer, 2, 1, 3, 3, tableContent1);
-        draw_table_widget(screen_buffer, 60, 1, 1, 2, tableFps);
+        // draw_table_widget(screen_buffer, 2, 1, 3, 3, tableContent1);
+        // draw_table_widget(screen_buffer, 60, 1, 1, 2, tableFps);
 
         char input[10];
         int n = read(STDIN_FILENO, input, sizeof(input));
@@ -156,6 +161,7 @@ void test_screen_buffer(Arena* arena) {
         usleep(6944);
         counter++;
     }
+    restore_terminal();
 }
 
 void run_arena_strings_tests() {
